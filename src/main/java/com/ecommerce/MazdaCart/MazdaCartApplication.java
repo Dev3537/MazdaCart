@@ -6,6 +6,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
 @SpringBootApplication
+/**
+ * Authored by www.linkedin.com/in/pbdevaraj
+ */
 public class MazdaCartApplication {
 
 	public static void main (String[] args) {
