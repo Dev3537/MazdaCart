@@ -26,7 +26,7 @@ public class JwtUtils {
 	private String jwtSecret;
 
 	@Value("${spring.jwt.expirations.tms}")
-	private int jwtExpirationTms;
+	private long jwtExpirationTms;
 
 
 	private Key getKey () {

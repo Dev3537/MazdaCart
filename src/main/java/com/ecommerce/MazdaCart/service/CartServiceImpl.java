@@ -16,9 +16,11 @@ import com.ecommerce.MazdaCart.util.AuthUtilHelperClass;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class CartServiceImpl implements CartService {
@@ -94,10 +96,13 @@ public class CartServiceImpl implements CartService {
 		if (allCarts.isEmpty())
 			throw new APIException("No carts found");
 
-		List<CartDTO> responseList = allCarts.stream().map(item -> {
-			CartDTO cartDTO = modelMapper.map(item, CartDTO.class);
-			List<ProductDTO> products =
-				item.getCartItemList().stream().map(p -> modelMapper.map(p.getProduct(), ProductDTO.class)).toList();
+		List<CartDTO> responseList = allCarts.stream().map(cart -> {
+			CartDTO cartDTO = modelMapper.map(cart, CartDTO.class);
+			List<ProductDTO> products = cart.getCartItemList().stream().map(cartProduct -> {
+				ProductDTO productDTO = modelMapper.map(cartProduct.getProduct(), ProductDTO.class);
+				productDTO.setQuantity(cartProduct.getQuantity());
+				return productDTO;
+			}).toList();
 			cartDTO.setProductDTOS(products);
 			return cartDTO;
 		}).toList();
@@ -110,10 +115,69 @@ public class CartServiceImpl implements CartService {
 		String emailId = authUtilHelperClass.getCurrentUserEmail();
 		Users user = userRepository.findByEmailId(emailId)
 			             .orElseThrow(() -> new ResourceNotFoundException("User not found with email Id:" + emailId));
-		Cart cart = user.getCart();
-		return modelMapper.map(cart, CartDTO.class);
+		if (user.getCart() == null) {
+			throw new ResourceNotFoundException("No Carts present for the user");
+		}
+
+		List<ProductDTO> productDTOS = user.getCart().getCartItemList().stream().map(item -> {
+			ProductDTO productDTO = modelMapper.map(item.getProduct(), ProductDTO.class);
+			productDTO.setQuantity(item.getQuantity());
+			return productDTO;
+		}).toList();
+		CartDTO cartDTO = modelMapper.map(user.getCart(), CartDTO.class);
+		cartDTO.setProductDTOS(productDTOS);
+
+		return cartDTO;
 
 
+	}
+
+	@Transactional
+	@Override
+	public CartDTO updateProductToCart (String productName, Integer newQuantity) {
+		Users user = authUtilHelperClass.getCurrentUser();
+		Cart cart = cartRepository.findByUsers(user);
+		if (cart == null) {
+			throw new APIException("No Cart found for the User: " + user.getUserName());
+		}
+
+		List<CartItem> cartItemList = cart.getCartItemList();
+		Product product =
+			cartItemList.stream().filter(p -> p.getProduct().getProductName().equalsIgnoreCase(productName)).findFirst()
+				.map(CartItem::getProduct).orElse(null);
+
+		if (product == null) {
+			throw new ResourceNotFoundException("No product found in the cart with the given name");
+		}
+		CartItem cartItem = cartItemRepository.findByProduct(product);
+
+		if (newQuantity == -1) {
+			cart.setTotalPrice(cart.getTotalPrice().subtract(cartItem.getProductPrice()));
+			cartItem.setQuantity(cartItem.getQuantity() + newQuantity);
+			if (cartItem.getQuantity() == 0) {
+				cartItemList.remove(cartItem);
+				cartItemRepository.delete(cartItem);
+			}
+		} else {
+			if (Objects.equals(cartItem.getQuantity(), product.getQuantity())) {
+				throw new APIException("Additional Quantity is not present in stock");
+			}
+			cartItem.setQuantity(cartItem.getQuantity() + newQuantity);
+			cart.setTotalPrice(cart.getTotalPrice().add(cartItem.getProductPrice()));
+			cartItemRepository.save(cartItem);
+		}
+
+		cart.setCartItemList(cartItemList);
+		cartRepository.save(cart);
+		CartDTO cartDTO = modelMapper.map(cart, CartDTO.class);
+		List<ProductDTO> productDTOS = cart.getCartItemList().stream().map(item -> {
+			ProductDTO productDTO = modelMapper.map(item.getProduct(), ProductDTO.class);
+			productDTO.setQuantity(cartItem.getQuantity());
+			return productDTO;
+		}).toList();
+		cartDTO.setProductDTOS(productDTOS);
+
+		return cartDTO;
 	}
 
 	private Cart getCart () {

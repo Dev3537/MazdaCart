@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class AuthServiceImpl implements AuthService {
@@ -92,9 +93,11 @@ public class AuthServiceImpl implements AuthService {
 			userRoles.forEach(roles -> {
 				switch (roles) {
 					case "admin":
-						Roles adminRole = roleRepository.getByRoleName(AppRole.ROLE_ADMIN).orElseThrow(
-							() -> new ResourceNotFoundException("Role Admin is not found in database"));
-						rolesPermitted.add(adminRole);
+						List<Roles> allRoles = roleRepository.findAll();
+						if (allRoles.isEmpty()) {
+							throw new ResourceNotFoundException("No Roles found in DB");
+						}
+						rolesPermitted.addAll(allRoles.stream().collect(Collectors.toSet()));
 						break;
 
 					case "seller":

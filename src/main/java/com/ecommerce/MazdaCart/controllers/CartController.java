@@ -1,5 +1,6 @@
 package com.ecommerce.MazdaCart.controllers;
 
+import com.ecommerce.MazdaCart.exceptions.APIException;
 import com.ecommerce.MazdaCart.payload.CartDTO;
 import com.ecommerce.MazdaCart.service.CartService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,10 +35,27 @@ public class CartController {
 	}
 
 
-	@PreAuthorize("hasAnyRole('ROLE_ADMIN')")
-	@GetMapping("/admin/carts/users/cart")
+	@PreAuthorize("hasAnyRole('ROLE_USER')")
+	@GetMapping("/public/carts/users/cart")
 	public ResponseEntity<CartDTO> getCartsByUser () {
 		CartDTO response = cartService.getCartsByUser();
+		return ResponseEntity.ok().body(response);
+	}
+
+	@PreAuthorize("hasAnyRole('ROLE_USER')")
+	@PostMapping("/public/carts/products/{productName}/quantity/{operation}/update")
+	public ResponseEntity<CartDTO> updateProductToCart (@PathVariable String productName,
+	                                                    @PathVariable String operation) {
+		int quantity;
+		if (operation.equalsIgnoreCase("decrement")) {
+			quantity = -1;
+		} else if (operation.equalsIgnoreCase("increment")) {
+			quantity = 1;
+		} else {
+			throw new APIException("Update operation not recognised:" + operation);
+		}
+
+		CartDTO response = cartService.updateProductToCart(productName, quantity);
 		return ResponseEntity.ok().body(response);
 	}
 
