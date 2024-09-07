@@ -1,0 +1,141 @@
+package com.ecommerce.MazdaCart.service;
+
+import com.ecommerce.MazdaCart.exceptions.APIException;
+import com.ecommerce.MazdaCart.exceptions.ResourceNotFoundException;
+import com.ecommerce.MazdaCart.model.AppRole;
+import com.ecommerce.MazdaCart.model.Roles;
+import com.ecommerce.MazdaCart.model.Users;
+import com.ecommerce.MazdaCart.payload.UserSignInRequest;
+import com.ecommerce.MazdaCart.payload.UserSignInResponse;
+import com.ecommerce.MazdaCart.payload.UserSignUpRequest;
+import com.ecommerce.MazdaCart.payload.UserSignUpResponse;
+import com.ecommerce.MazdaCart.repository.RoleRepository;
+import com.ecommerce.MazdaCart.repository.UserRepository;
+import com.ecommerce.MazdaCart.security.jwt.JwtUtils;
+import com.ecommerce.MazdaCart.security.servicesOfJwt.UserDetailsImpl;
+import org.apache.commons.lang3.StringUtils;
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+@Service
+public class AuthServiceImpl implements AuthService {
+
+
+	@Autowired
+	JwtUtils jwtUtils;
+
+	@Autowired
+	UserRepository userRepository;
+
+	@Autowired
+	PasswordEncoder passwordEncoder;
+
+	@Autowired
+	RoleRepository roleRepository;
+
+	@Autowired
+	ModelMapper modelMapper;
+
+	private static String jwt = StringUtils.EMPTY;
+
+
+	@Override
+	public UserSignInResponse signInUser (UserSignInRequest loginRequest, Authentication authentication) {
+
+		SecurityContextHolder.getContext().setAuthentication(authentication);
+
+		UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+
+		jwt = jwtUtils.getJwtForUserName(userDetails);
+
+		List<String> authorities =
+			authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
+
+		return new UserSignInResponse(jwt, loginRequest.getUserName(), authorities);
+	}
+
+
+	@Override
+	public UserSignUpResponse registerUser (UserSignUpRequest signUpRequest) {
+
+		if (userRepository.findByUserNameIgnoreCase(signUpRequest.getUserName()).isPresent()) {
+			throw new APIException("User Name Already exists");
+		}
+
+		if (userRepository.findByEmailId(signUpRequest.getEmailId()).isPresent()) {
+			throw new APIException("Email Id Already exists");
+		}
+
+		Users newUser = new Users();
+		newUser.setUserName(signUpRequest.getUserName());
+		newUser.setPassword(passwordEncoder.encode(signUpRequest.getPassword()));
+		newUser.setEmailId(signUpRequest.getEmailId());
+
+		Set<String> userRoles = signUpRequest.getRoles();
+
+		Set<Roles> rolesPermitted = new HashSet<>();
+
+		if (userRoles.isEmpty()) {
+			Roles role = roleRepository.getByRoleName(AppRole.ROLE_USER)
+				             .orElseThrow(() -> new ResourceNotFoundException("Role User is not found in database"));
+			rolesPermitted.add(role);
+		} else {
+			userRoles.forEach(roles -> {
+				switch (roles) {
+					case "admin":
+						Roles adminRole = roleRepository.getByRoleName(AppRole.ROLE_ADMIN).orElseThrow(
+							() -> new ResourceNotFoundException("Role Admin is not found in database"));
+						rolesPermitted.add(adminRole);
+						break;
+
+					case "seller":
+						Roles sellerRole = roleRepository.getByRoleName(AppRole.ROLE_SELLER).orElseThrow(
+							() -> new ResourceNotFoundException("Role Seller is not found in database"));
+						rolesPermitted.add(sellerRole);
+						break;
+
+					default:
+						Roles userRole = roleRepository.getByRoleName(AppRole.ROLE_USER).orElseThrow(
+							() -> new ResourceNotFoundException("Role User is not found in database"));
+						rolesPermitted.add(userRole);
+						break;
+
+				}
+			});
+
+
+		}
+
+
+		newUser.setRoles(rolesPermitted);
+
+		Users savedUser = userRepository.save(newUser);
+
+		return modelMapper.map(savedUser, UserSignUpResponse.class);
+	}
+
+
+	@Override
+	public UserSignInResponse getUserDetails (Authentication authentication) {
+
+		UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+
+		UserSignInResponse response = modelMapper.map(userDetails, UserSignInResponse.class);
+
+		response.setJwtToken(jwt);
+
+		response.setRoles(authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList());
+
+		return response;
+
+	}
+}
