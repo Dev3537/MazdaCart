@@ -105,6 +105,17 @@ public class CartServiceImpl implements CartService {
 		return responseList;
 	}
 
+	@Override
+	public CartDTO getCartsByUser () {
+		String emailId = authUtilHelperClass.getCurrentUserEmail();
+		Users user = userRepository.findByEmailId(emailId)
+			             .orElseThrow(() -> new ResourceNotFoundException("User not found with email Id:" + emailId));
+		Cart cart = user.getCart();
+		return modelMapper.map(cart, CartDTO.class);
+
+
+	}
+
 	private Cart getCart () {
 		Users user = authUtilHelperClass.getCurrentUser();
 		Cart cart = cartRepository.findByUsers(user);

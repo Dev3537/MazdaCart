@@ -20,4 +20,12 @@ public class AuthUtilHelperClass {
 		return userRepository.findByUserNameIgnoreCase(userName).orElseThrow(
 			() -> new ResourceNotFoundException("User not found in DB while accessing authenticated user details"));
 	}
+
+	public String getCurrentUserEmail () {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		Users users = userRepository.findByUserNameIgnoreCase(authentication.getName()).orElseThrow(
+			() -> new ResourceNotFoundException("User not found in DB while accessing authenticated user details"));
+		return users.getEmailId();
+
+	}
 }

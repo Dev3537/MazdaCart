@@ -10,4 +10,5 @@ public interface CartService {
 
 	List<CartDTO> getAllCarts ();
 
+	CartDTO getCartsByUser ();
 }
