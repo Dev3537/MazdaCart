@@ -2,10 +2,14 @@ package com.ecommerce.MazdaCart.service;
 
 import com.ecommerce.MazdaCart.exceptions.APIException;
 import com.ecommerce.MazdaCart.exceptions.ResourceNotFoundException;
+import com.ecommerce.MazdaCart.model.Cart;
+import com.ecommerce.MazdaCart.model.CartItem;
 import com.ecommerce.MazdaCart.model.Category;
 import com.ecommerce.MazdaCart.model.Product;
 import com.ecommerce.MazdaCart.payload.ProductDTO;
 import com.ecommerce.MazdaCart.payload.ProductResponse;
+import com.ecommerce.MazdaCart.repository.CartItemRepository;
+import com.ecommerce.MazdaCart.repository.CartRepository;
 import com.ecommerce.MazdaCart.repository.CategoryRepository;
 import com.ecommerce.MazdaCart.repository.ProductRepository;
 import com.ecommerce.MazdaCart.util.EcomConstants;
@@ -16,11 +20,13 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class ProductServiceImpl implements ProductService {
@@ -37,6 +43,12 @@ public class ProductServiceImpl implements ProductService {
 
 	@Autowired
 	FileService fileService;
+
+	@Autowired
+	CartRepository cartRepository;
+
+	@Autowired
+	CartItemRepository cartItemRepository;
 
 	@Override
 	public ProductDTO addProduct (ProductDTO productDTO, String categoryName) {
@@ -150,6 +162,7 @@ public class ProductServiceImpl implements ProductService {
 		return response;
 	}
 
+	@Transactional
 	@Override
 	public ProductDTO updateProduct (ProductDTO productDTO, String productName) {
 
@@ -161,22 +174,56 @@ public class ProductServiceImpl implements ProductService {
 		Product product = modelMapper.map(productDTO, Product.class);
 		checkExisitingProduct.setDescription(product.getDescription());
 		checkExisitingProduct.setPrice(product.getPrice());
+		checkExisitingProduct.setDiscount(product.getDiscount());
 		BigDecimal specialPrice = product.getPrice().subtract(
 			product.getDiscount().multiply(BigDecimal.valueOf(PERCENTAGE_CAL_BY_100)).multiply(product.getPrice()));
+
+		if (!Objects.equals(checkExisitingProduct.getSpecialPrice(), specialPrice)) {
+			updateProductPricingInCart(checkExisitingProduct, specialPrice);
+		}
 		checkExisitingProduct.setSpecialPrice(specialPrice);
-		checkExisitingProduct.setDiscount(product.getDiscount());
 		checkExisitingProduct.setQuantity(product.getQuantity());
 		checkExisitingProduct.setImage("UpdatedImage.jpg");
+
 		return modelMapper.map(productRepository.save(checkExisitingProduct), ProductDTO.class);
 
 	}
 
+	/**
+	 * Updates the product details in the cart including the price and discount details
+	 *
+	 * @param product
+	 * @param specialPrice
+	 */
+	private void updateProductPricingInCart (Product product, BigDecimal specialPrice) {
+		List<Cart> allCarts = cartRepository.findCartsByProductId(product.getProductId());
+
+		for (Cart cart : allCarts) {
+			List<CartItem> cartItemList = cart.getCartItemList();
+			CartItem cartItem =
+				cartItemList.stream().filter(c -> c.getProduct().getProductId().equals(product.getProductId()))
+					.findFirst().orElseThrow(() -> new ResourceNotFoundException(
+						"Cart Item not found with the given product, Check " + "Query"));
+			BigDecimal currentDiff = specialPrice.subtract(cartItem.getProductPrice());
+			cartItem.setProductPrice(specialPrice);
+			cartItem.setDiscount(product.getDiscount());
+			cartItemRepository.save(cartItem);
+			cart.setCartItemList(cartItemList);
+			cart.setTotalPrice(
+				cart.getTotalPrice().add(currentDiff.multiply(BigDecimal.valueOf(cartItem.getQuantity()))));
+			cartRepository.save(cart);
+		}
+	}
+
+	@Transactional
 	@Override
 	public ProductDTO deleteProduct (String productName) {
 
 		Product product = productRepository.findByProductName(productName);
 		if (product == null)
 			throw new ResourceNotFoundException(productName, "Product", "ProductName");
+
+		deleteProductFromCart(product);
 
 		/**
 		 * In a bidirectional relationship it is tough to delete entities. One way is to create a @PreRemove method (it
@@ -189,9 +236,34 @@ public class ProductServiceImpl implements ProductService {
 		deletePrFromCat.getProductSet().removeIf(c -> c.getProductId().equals(product.getProductId()));
 		categoryRepository.save(deletePrFromCat);
 
-
 		productRepository.delete(product);
 		return modelMapper.map(product, ProductDTO.class);
+	}
+
+	/**
+	 * Delete the product from whichever cart it has been added to and updates the cart's total price.
+	 *
+	 * @param product
+	 */
+	private void deleteProductFromCart (Product product) {
+		List<Cart> allCarts = cartRepository.findCartsByProductId(product.getProductId());
+
+		for (Cart cart : allCarts) {
+			List<CartItem> cartItemList = cart.getCartItemList();
+			CartItem cartItem =
+				cartItemList.stream().filter(c -> c.getProduct().getProductId().equals(product.getProductId()))
+					.findFirst().orElseThrow(() -> new ResourceNotFoundException(
+						"Cart Item not found with the given product, Check " + "Query"));
+
+			cartItemList.remove(cartItem);
+			cartItemRepository.delete(cartItem);
+			cart.setCartItemList(cartItemList);
+			cart.setTotalPrice(cart.getTotalPrice().subtract(
+				product.getSpecialPrice().multiply(BigDecimal.valueOf(cartItem.getQuantity()))));
+			cartRepository.save(cart);
+		}
+
+
 	}
 
 	@Override

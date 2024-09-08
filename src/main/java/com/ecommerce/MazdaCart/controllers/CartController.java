@@ -43,10 +43,11 @@ public class CartController {
 	}
 
 	@PreAuthorize("hasAnyRole('ROLE_USER')")
-	@PostMapping("/public/carts/products/{productName}/quantity/{operation}/update")
+	@PutMapping("/public/carts/products/{productName}/quantity/{operation}/update")
 	public ResponseEntity<CartDTO> updateProductToCart (@PathVariable String productName,
 	                                                    @PathVariable String operation) {
 		int quantity;
+
 		if (operation.equalsIgnoreCase("decrement")) {
 			quantity = -1;
 		} else if (operation.equalsIgnoreCase("increment")) {
@@ -60,4 +61,10 @@ public class CartController {
 	}
 
 
+	@PreAuthorize("hasAnyRole('ROLE_USER')")
+	@DeleteMapping("/public/carts/{productName}/delete")
+	public ResponseEntity<CartDTO> deleteProductFromCart (@PathVariable String productName) {
+		CartDTO response = cartService.deleteProductFromCart(productName);
+		return ResponseEntity.ok().body(response);
+	}
 }

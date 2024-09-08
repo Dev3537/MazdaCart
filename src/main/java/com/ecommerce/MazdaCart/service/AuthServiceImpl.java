@@ -13,6 +13,7 @@ import com.ecommerce.MazdaCart.repository.RoleRepository;
 import com.ecommerce.MazdaCart.repository.UserRepository;
 import com.ecommerce.MazdaCart.security.jwt.JwtUtils;
 import com.ecommerce.MazdaCart.security.servicesOfJwt.UserDetailsImpl;
+import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,8 +47,6 @@ public class AuthServiceImpl implements AuthService {
 	@Autowired
 	ModelMapper modelMapper;
 
-	private static String jwt = StringUtils.EMPTY;
-
 
 	@Override
 	public UserSignInResponse signInUser (UserSignInRequest loginRequest, Authentication authentication) {
@@ -56,7 +55,7 @@ public class AuthServiceImpl implements AuthService {
 
 		UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 
-		jwt = jwtUtils.getJwtForUserName(userDetails);
+		String jwt = jwtUtils.getJwtForUserName(userDetails);
 
 		List<String> authorities =
 			authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
@@ -128,11 +127,13 @@ public class AuthServiceImpl implements AuthService {
 
 
 	@Override
-	public UserSignInResponse getUserDetails (Authentication authentication) {
+	public UserSignInResponse getUserDetails (Authentication authentication, HttpServletRequest httpServletRequest) {
 
 		UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 
 		UserSignInResponse response = modelMapper.map(userDetails, UserSignInResponse.class);
+
+		String jwt = jwtUtils.getJwtFromHeader(httpServletRequest);
 
 		response.setJwtToken(jwt);
 

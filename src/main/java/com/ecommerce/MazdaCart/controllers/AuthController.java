@@ -7,6 +7,7 @@ import com.ecommerce.MazdaCart.payload.UserSignInResponse;
 import com.ecommerce.MazdaCart.payload.UserSignUpResponse;
 import com.ecommerce.MazdaCart.security.jwt.JwtUtils;
 import com.ecommerce.MazdaCart.service.AuthService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,10 +58,10 @@ public class AuthController {
 
 
 	@GetMapping("/getUserDetails")
-	public ResponseEntity<UserSignInResponse> getUserDetails (Authentication authentication) {
+	public ResponseEntity<UserSignInResponse> getUserDetails (Authentication authentication, HttpServletRequest httpServletRequest) {
 		UserSignInResponse response;
 		if (authentication != null) {
-			response = authService.getUserDetails(authentication);
+			response = authService.getUserDetails(authentication, httpServletRequest);
 		} else {
 			throw new BadCredsException("Authentication not found");
 		}

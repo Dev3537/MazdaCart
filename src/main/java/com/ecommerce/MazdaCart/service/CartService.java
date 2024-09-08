@@ -42,4 +42,13 @@ public interface CartService {
 	 * @return
 	 */
 	CartDTO updateProductToCart (String productName, Integer quantity);
+
+	/**
+	 * Deletes the entire product from the current user's cart.
+	 * Retrieves cart details with the price in sync.
+	 *
+	 * @param productName
+	 * @return
+	 */
+	CartDTO deleteProductFromCart (String productName);
 }

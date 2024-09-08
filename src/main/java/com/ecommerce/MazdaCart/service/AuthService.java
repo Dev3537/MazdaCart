@@ -4,6 +4,7 @@ import com.ecommerce.MazdaCart.payload.UserSignInRequest;
 import com.ecommerce.MazdaCart.payload.UserSignInResponse;
 import com.ecommerce.MazdaCart.payload.UserSignUpRequest;
 import com.ecommerce.MazdaCart.payload.UserSignUpResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.security.core.Authentication;
 
@@ -30,7 +31,8 @@ public interface AuthService {
 	 * Gets the details of the current user logged in
 	 *
 	 * @param authentication
+	 * @param httpServletRequest
 	 * @return
 	 */
-	UserSignInResponse getUserDetails (Authentication authentication);
+	UserSignInResponse getUserDetails (Authentication authentication, HttpServletRequest httpServletRequest);
 }
