@@ -11,7 +11,7 @@
     <groupId>com.ecommerce</groupId>
     <artifactId>Mazda_Cart</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>Ecom_SB</name>
+    <name>Mazda_Cart</name>
     <description>Ecommerce Application Based on spring boot</description>
     <url/>
     <licenses>
