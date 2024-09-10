@@ -104,9 +104,10 @@ public class AddressServiceImpl implements AddressService {
 		Address addressToDelete = addresses.stream().filter(add -> add.getAddressId().equals(addressId)).findAny()
 			                          .orElseThrow(() -> new ResourceNotFoundException(
 				                          EcomConstants.NO_ADDRESSES_FOUND_FOR_THE_USER + currentUser.getUserName() +
-					                          " for the given addressId" + addressId));
+					                          " for the given addressId: " + addressId));
+		currentUser.getAddresses().removeIf(add -> add.getAddressId().equals(addressId));
+		userRepository.save(currentUser);
 		addressRepository.delete(addressToDelete);
-
 		return modelMapper.map(addressToDelete, AddressDTO.class);
 	}
 
@@ -114,6 +115,9 @@ public class AddressServiceImpl implements AddressService {
 	public AddressDTO deleteAnyAddress (Long addressId) {
 		Address addressToDelete = addressRepository.findById(addressId).orElseThrow(
 			(() -> new ResourceNotFoundException("No Address found for the given addressId: " + addressId)));
+		Users user = addressToDelete.getUsers();
+		user.getAddresses().removeIf(add -> add.getAddressId().equals(addressId));
+		userRepository.save(user);
 		addressRepository.delete(addressToDelete);
 		return modelMapper.map(addressToDelete, AddressDTO.class);
 	}
