@@ -8,7 +8,6 @@ import com.ecommerce.mazdacart.payload.CategoryDTO;
 import com.ecommerce.mazdacart.payload.CategoryResponse;
 import com.ecommerce.mazdacart.repository.CategoryRepository;
 import com.ecommerce.mazdacart.util.EcomConstants;
-import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -16,6 +15,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -66,6 +66,7 @@ public class CategoryServiceImpl implements CategoryService {
 
 	}
 
+	@Transactional
 	@Override
 	public CategoryDTO updateCategory (CategoryDTO category, String categoryName) {
 
@@ -78,10 +79,9 @@ public class CategoryServiceImpl implements CategoryService {
 		if (existingCategory == null) {
 			throw new ResourceNotFoundException(categoryName, "Category", "CategoryName");
 		}
-
-		Category newCategory = modelMapper.map(category, Category.class);
-		existingCategory.setCategoryName(newCategory.getCategoryName());
-		return createCategory(modelMapper.map(existingCategory, CategoryDTO.class));
+		existingCategory.setCategoryName(category.getCategoryName());
+		categoryRepository.updateCategoryName(category.getCategoryName(),existingCategory.getCategoryId());
+		return modelMapper.map(existingCategory, CategoryDTO.class);
 
 	}
 

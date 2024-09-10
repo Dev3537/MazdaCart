@@ -1,6 +1,5 @@
-package com.ecommerce.mazdacart.model;
+package com.ecommerce.mazdacart.payload;
 
-import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -8,15 +7,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Entity
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Address {
+public class AddressDTO {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long addressId;
 
 	@NotBlank(message = "Street field must not be blank")
@@ -37,12 +33,4 @@ public class Address {
 	@NotBlank
 	@Size(min = 6, max = 6, message = "Zipcode can only be exactly 6 digits")
 	private String zipcode;
-
-	@ManyToOne
-	private Users users;
-
-
 }
-
-
-

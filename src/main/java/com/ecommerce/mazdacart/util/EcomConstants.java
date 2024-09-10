@@ -2,6 +2,8 @@ package com.ecommerce.mazdacart.util;
 
 public class EcomConstants {
 
+	public static final String NO_ADDRESSES_FOUND_FOR_THE_USER = "No addresses found for the user: ";
+
 	private EcomConstants () {
 		throw new IllegalStateException("Utility class");
 	}

@@ -53,9 +53,8 @@ public class Users {
 	//all products associated with the seller is also deleted
 
 
-	@ManyToMany(cascade = {CascadeType.MERGE, CascadeType.PERSIST}, fetch = FetchType.EAGER)
-	@JoinTable(name = "User_Address_Join_Table", joinColumns = @JoinColumn(name = "userId"), inverseJoinColumns =
-	@JoinColumn(name = "addressId"))
+	@OneToMany(cascade = {CascadeType.MERGE,
+		CascadeType.PERSIST}, fetch = FetchType.EAGER, orphanRemoval = true, mappedBy = "users")
 	private List<Address> addresses = new ArrayList<>();
 
 
