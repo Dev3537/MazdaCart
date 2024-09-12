@@ -5,6 +5,7 @@ import com.ecommerce.mazdacart.service.AddressService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -23,7 +24,7 @@ public class AddressController {
 	@PostMapping("/public/address/create")
 	public ResponseEntity<AddressDTO> createAddress (@Valid @RequestBody AddressDTO addressDTO) {
 		AddressDTO responseDTO = addressService.createNewAddress(addressDTO);
-		return ResponseEntity.ok().body(responseDTO);
+		return new ResponseEntity<>(responseDTO, HttpStatus.CREATED);
 	}
 
 	@PreAuthorize("hasAnyRole('ROLE_ADMIN')")

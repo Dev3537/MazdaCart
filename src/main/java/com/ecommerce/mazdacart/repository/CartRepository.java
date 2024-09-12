@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface CartRepository extends JpaRepository<Cart, Long> {
 	Cart findByUsers (Users user);
@@ -15,4 +16,9 @@ public interface CartRepository extends JpaRepository<Cart, Long> {
 			                           "product p on p" +
 			                           ".product_id=ci.product_id where p.product_id=:productId")
 	List<Cart> findCartsByProductId (Long productId);
+
+
+	@Query(nativeQuery = true, value =
+		                           "select c.* from cart c left join users u on c.user_id=u.user_id  and upper(u.email_id)=upper(:emailId)")
+	Optional<Cart> findCartByEmailId (String emailId);
 }

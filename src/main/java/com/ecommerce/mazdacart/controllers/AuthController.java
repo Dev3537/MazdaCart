@@ -51,7 +51,7 @@ public class AuthController {
 
 		UserSignUpResponse response = authService.registerUser(signUpRequest);
 
-		return new ResponseEntity<>(response, HttpStatus.OK);
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
 
