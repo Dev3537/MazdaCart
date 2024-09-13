@@ -11,8 +11,6 @@ import lombok.Setter;
 @AllArgsConstructor
 public class OrderRequestDTO {
 
-	private Long addressId;
-
 	private Long paymentId;
 
 	private String paymentMethod;

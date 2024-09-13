@@ -10,6 +10,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestClient;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -49,16 +50,28 @@ public class OrderServiceImpl implements OrderService {
 	@Autowired
 	OrderItemRepository orderItemRepository;
 
+	@Autowired
+	private RestClient restClient;
+
 
 	@Transactional
 	@Override
-	public OrdersDTO placeOrder (OrderRequestDTO orderRequestDTO) {
+	public OrdersDTO placeOrder (String paymentMethod, Long addressId) {
+
+		String url = String.format("http://localhost:8081/api/payment/gateway-proceed/%s", paymentMethod);
+
+		OrderRequestDTO orderRequestDTO = restClient.get().uri(url).retrieve().body(OrderRequestDTO.class);
+
+		if (orderRequestDTO == null) {
+			throw new APIException("Payment Gateway failed");
+		}
+
 		String emailId = authUtilHelperClass.getCurrentUserEmail();
 
 		Cart currentCart = cartRepository.findCartByEmailId(emailId)
 			                   .orElseThrow(() -> new ResourceNotFoundException("No Carts found for the user"));
 
-		Address address = addressRepository.findById(orderRequestDTO.getAddressId())
+		Address address = addressRepository.findById(addressId)
 			                  .orElseThrow(() -> new APIException("No Address found for the given address ID"));
 
 		Orders orders = new Orders();
