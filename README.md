@@ -1,1 +1,1 @@
-This is my first Spring Boot End to End project. Still learning. Still adding stuff daily.
+This is my Spring Boot End to End project. Still adding stuff daily.
