@@ -19,6 +19,6 @@ public interface CartRepository extends JpaRepository<Cart, Long> {
 
 
 	@Query(nativeQuery = true, value =
-		                           "select c.* from cart c left join users u on c.user_id=u.user_id  and upper(u.email_id)=upper(:emailId)")
+		                           "select c.* from cart c , users u where c.user_id=u.user_id  and u.email_id=:emailId")
 	Optional<Cart> findCartByEmailId (String emailId);
 }

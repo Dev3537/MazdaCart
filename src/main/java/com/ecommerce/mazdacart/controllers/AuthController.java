@@ -36,7 +36,7 @@ public class AuthController {
 				new UsernamePasswordAuthenticationToken(loginRequest.getUserName(), loginRequest.getPassword()));
 		} catch (AuthenticationException e) {
 			throw new BadCredsException(
-				"The User ~ " + loginRequest.getUserName() + " ~failed to authenticate the credentials");
+				"The User: '" + loginRequest.getUserName() + "' failed to authenticate | User does not exist in system");
 		}
 
 		UserSignInResponse response = authService.signInUser(loginRequest, authentication);
@@ -61,7 +61,7 @@ public class AuthController {
 		if (authentication != null) {
 			response = authService.getUserDetails(authentication, httpServletRequest);
 		} else {
-			throw new BadCredsException("Authentication not found");
+			throw new BadCredsException("Authentication header not found");
 		}
 		return ResponseEntity.ok().body(response);
 	}
