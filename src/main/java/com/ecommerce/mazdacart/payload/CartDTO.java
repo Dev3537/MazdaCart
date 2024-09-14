@@ -19,7 +19,7 @@ public class CartDTO {
 
 	private BigDecimal totalPrice;
 
-	private List<ProductDTO> productDTOS = new ArrayList<>();
+	private List<ProductDTO> products = new ArrayList<>();
 
 
 }

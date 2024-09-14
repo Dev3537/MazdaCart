@@ -76,16 +76,15 @@ public class CartServiceImpl implements CartService {
 
 		List<CartItem> cartItems = cart.getCartItemList();
 
-		List<ProductDTO> productDTOs =
-			cartItems.stream().filter(p -> p.getProduct().getProductId().equals(product.getProductId())).map(item -> {
-				ProductDTO productDTO = modelMapper.map(item.getProduct(), ProductDTO.class);
-				productDTO.setQuantity(quantity);
-				return productDTO;
-			}).toList();
+		List<ProductDTO> productDTOs = cartItems.stream().map(item -> {
+			ProductDTO productDTO = modelMapper.map(item.getProduct(), ProductDTO.class);
+			productDTO.setQuantity(quantity);
+			return productDTO;
+		}).toList();
 
 		CartDTO response = modelMapper.map(cart, CartDTO.class);
 
-		response.setProductDTOS(productDTOs);
+		response.setProducts(productDTOs);
 		return response;
 
 	}
@@ -104,7 +103,7 @@ public class CartServiceImpl implements CartService {
 				productDTO.setQuantity(cartProduct.getQuantity());
 				return productDTO;
 			}).toList();
-			cartDTO.setProductDTOS(products);
+			cartDTO.setProducts(products);
 			return cartDTO;
 		}).toList();
 
@@ -126,7 +125,7 @@ public class CartServiceImpl implements CartService {
 			return productDTO;
 		}).toList();
 		CartDTO cartDTO = modelMapper.map(user.getCart(), CartDTO.class);
-		cartDTO.setProductDTOS(productDTOS);
+		cartDTO.setProducts(productDTOS);
 
 		return cartDTO;
 
@@ -176,7 +175,7 @@ public class CartServiceImpl implements CartService {
 			productDTO.setQuantity(cartItem.getQuantity());
 			return productDTO;
 		}).toList();
-		cartDTO.setProductDTOS(productDTOS);
+		cartDTO.setProducts(productDTOS);
 
 		return cartDTO;
 	}
@@ -214,7 +213,7 @@ public class CartServiceImpl implements CartService {
 			productDTO.setQuantity(cartItem.getQuantity());
 			return productDTO;
 		}).toList();
-		cartDTO.setProductDTOS(productDTOS);
+		cartDTO.setProducts(productDTOS);
 
 		return cartDTO;
 

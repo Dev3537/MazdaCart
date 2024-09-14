@@ -22,7 +22,7 @@ public class OrdersDTO {
 
 	private LocalDate orderDate;
 
-	private PaymentDTO paymentDTO;
+	private PaymentDTO paymentDetails;
 
 	private BigDecimal totalAmount;
 

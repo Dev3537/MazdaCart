@@ -104,7 +104,7 @@ public class OrderServiceImpl implements OrderService {
 		Orders savedOrder = ordersRepository.save(orders);
 
 		OrdersDTO responseDTO = modelMapper.map(savedOrder, OrdersDTO.class);
-		responseDTO.setPaymentDTO(modelMapper.map(payment, PaymentDTO.class));
+		responseDTO.setPaymentDetails(modelMapper.map(payment, PaymentDTO.class));
 		List<OrderItemDTO> orderItemDTOS = orderItemList.stream().map(orderItem -> {
 			OrderItemDTO itemDTO = modelMapper.map(orderItem, OrderItemDTO.class);
 			itemDTO.setProductName(orderItem.getProduct().getProductName());
