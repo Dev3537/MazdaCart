@@ -31,24 +31,23 @@ import java.util.Objects;
 @Service
 public class ProductServiceImpl implements ProductService {
 
-	public static final double PERCENTAGE_CAL_BY_100 = 0.01;
 	@Autowired
-	ModelMapper modelMapper;
+	private ModelMapper modelMapper;
 
 	@Autowired
-	CategoryRepository categoryRepository;
+	private CategoryRepository categoryRepository;
 
 	@Autowired
-	ProductRepository productRepository;
+	private ProductRepository productRepository;
 
 	@Autowired
-	FileService fileService;
+	private FileService fileService;
 
 	@Autowired
-	CartRepository cartRepository;
+	private CartRepository cartRepository;
 
 	@Autowired
-	CartItemRepository cartItemRepository;
+	private CartItemRepository cartItemRepository;
 
 	@Override
 	public ProductDTO addProduct (ProductDTO productDTO, String categoryName) {
@@ -65,7 +64,7 @@ public class ProductServiceImpl implements ProductService {
 		Product product = modelMapper.map(productDTO, Product.class);
 		product.setCategory(category);
 		BigDecimal specialPrice = product.getPrice().subtract(
-			product.getDiscount().multiply(BigDecimal.valueOf(PERCENTAGE_CAL_BY_100)).multiply(product.getPrice()));
+			product.getDiscount().multiply(BigDecimal.valueOf(EcomConstants.PERCENTAGE_CAL_BY_100)).multiply(product.getPrice()));
 		product.setSpecialPrice(specialPrice);
 		product.setImage("default.png");
 		Product savedProduct = productRepository.save(product);
@@ -174,7 +173,7 @@ public class ProductServiceImpl implements ProductService {
 		checkExisitingProduct.setPrice(product.getPrice());
 		checkExisitingProduct.setDiscount(product.getDiscount());
 		BigDecimal specialPrice = product.getPrice().subtract(
-			product.getDiscount().multiply(BigDecimal.valueOf(PERCENTAGE_CAL_BY_100)).multiply(product.getPrice()));
+			product.getDiscount().multiply(BigDecimal.valueOf(EcomConstants.PERCENTAGE_CAL_BY_100)).multiply(product.getPrice()));
 
 		if (!Objects.equals(checkExisitingProduct.getSpecialPrice(), specialPrice)) {
 			updateProductPricingInCart(checkExisitingProduct, specialPrice);

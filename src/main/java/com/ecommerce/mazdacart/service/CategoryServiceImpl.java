@@ -23,13 +23,13 @@ import java.util.List;
 public class CategoryServiceImpl implements CategoryService {
 
 	@Autowired
-	CategoryRepository categoryRepository;
+	private CategoryRepository categoryRepository;
 
 	@Autowired
-	ProductService productService;
+	private ProductService productService;
 
 	@Autowired
-	ModelMapper modelMapper;
+	private ModelMapper modelMapper;
 
 	@Override
 	public CategoryResponse getAllCategories (Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {

@@ -21,34 +21,28 @@ import java.util.stream.Collectors;
 public class OrderServiceImpl implements OrderService {
 
 	@Autowired
-	AuthUtilHelperClass authUtilHelperClass;
+	private AuthUtilHelperClass authUtilHelperClass;
 
 	@Autowired
-	ModelMapper modelMapper;
+	private ModelMapper modelMapper;
 
 	@Autowired
-	CartRepository cartRepository;
+	private CartRepository cartRepository;
 
 	@Autowired
-	AddressRepository addressRepository;
+	private AddressRepository addressRepository;
 
 	@Autowired
-	PaymentRepository paymentRepository;
+	private PaymentRepository paymentRepository;
 
 	@Autowired
-	ProductRepository productRepository;
+	private ProductRepository productRepository;
 
 	@Autowired
-	CartRepository cartItemRepository;
+	private OrdersRepository ordersRepository;
 
 	@Autowired
-	CartService cartService;
-
-	@Autowired
-	OrdersRepository ordersRepository;
-
-	@Autowired
-	OrderItemRepository orderItemRepository;
+	private OrderItemRepository orderItemRepository;
 
 	@Autowired
 	private RestClient restClient;

@@ -26,23 +26,22 @@ import java.util.Objects;
 public class CartServiceImpl implements CartService {
 
 	@Autowired
-	AuthUtilHelperClass authUtilHelperClass;
-
-
-	@Autowired
-	UserRepository userRepository;
+	private AuthUtilHelperClass authUtilHelperClass;
 
 	@Autowired
-	CartRepository cartRepository;
+	private UserRepository userRepository;
 
 	@Autowired
-	ProductRepository productRepository;
+	private CartRepository cartRepository;
 
 	@Autowired
-	CartItemRepository cartItemRepository;
+	private ProductRepository productRepository;
 
 	@Autowired
-	ModelMapper modelMapper;
+	private CartItemRepository cartItemRepository;
+
+	@Autowired
+	private ModelMapper modelMapper;
 
 	@Override
 	public CartDTO addProductToCart (String productName, Integer quantity) {
