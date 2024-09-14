@@ -19,16 +19,16 @@ import java.util.List;
 public class AddressServiceImpl implements AddressService {
 
 	@Autowired
-	AddressRepository addressRepository;
+	private AddressRepository addressRepository;
 
 	@Autowired
-	ModelMapper modelMapper;
+	private ModelMapper modelMapper;
 
 	@Autowired
-	AuthUtilHelperClass authUtilHelperClass;
+	private AuthUtilHelperClass authUtilHelperClass;
 
 	@Autowired
-	UserRepository userRepository;
+	private UserRepository userRepository;
 
 	@Override
 	public AddressDTO createNewAddress (AddressDTO addressDTO) {

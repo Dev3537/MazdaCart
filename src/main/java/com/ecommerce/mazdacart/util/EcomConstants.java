@@ -15,7 +15,7 @@ public class EcomConstants {
 	public static final String SORT_PRODUCTS_BY = "productId";
 	public static final String SORT_DIR = "asc";
 
-
+	public static final double PERCENTAGE_CAL_BY_100 = 0.01;
 	public static final String PRODUCT = "Product";
 	public static final String CATEGORY = "Category";
 	public static final String CATEGORY_NAME = "CategoryName";
