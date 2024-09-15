@@ -57,10 +57,9 @@ public interface ProductService {
 	 * Update an existing product, throws exception if product doesn't exist
 	 *
 	 * @param productDTO
-	 * @param productName
 	 * @return
 	 */
-	ProductDTO updateProduct (ProductDTO productDTO, String productName);
+	ProductDTO updateProduct (ProductDTO productDTO);
 
 	/**
 	 * Delete products from DB, throws exception if given product not found

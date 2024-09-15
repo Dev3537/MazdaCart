@@ -64,7 +64,8 @@ public class ProductServiceImpl implements ProductService {
 		Product product = modelMapper.map(productDTO, Product.class);
 		product.setCategory(category);
 		BigDecimal specialPrice = product.getPrice().subtract(
-			product.getDiscount().multiply(BigDecimal.valueOf(EcomConstants.PERCENTAGE_CAL_BY_100)).multiply(product.getPrice()));
+			product.getDiscount().multiply(BigDecimal.valueOf(EcomConstants.PERCENTAGE_CAL_BY_100))
+				.multiply(product.getPrice()));
 		product.setSpecialPrice(specialPrice);
 		product.setImage("default.png");
 		Product savedProduct = productRepository.save(product);
@@ -161,11 +162,12 @@ public class ProductServiceImpl implements ProductService {
 
 	@Transactional
 	@Override
-	public ProductDTO updateProduct (ProductDTO productDTO, String productName) {
+	public ProductDTO updateProduct (ProductDTO productDTO) {
 
-		Product checkExisitingProduct = productRepository.findByProductNameIgnoreCase(productName);
+		Product checkExisitingProduct = productRepository.findByProductNameIgnoreCase(productDTO.getProductName());
 		if (checkExisitingProduct == null) {
-			throw new ResourceNotFoundException(productName, EcomConstants.PRODUCT, EcomConstants.PRODUCT_NAME);
+			throw new ResourceNotFoundException(productDTO.getProductName(), EcomConstants.PRODUCT,
+				EcomConstants.PRODUCT_NAME);
 		}
 
 		Product product = modelMapper.map(productDTO, Product.class);
@@ -173,7 +175,8 @@ public class ProductServiceImpl implements ProductService {
 		checkExisitingProduct.setPrice(product.getPrice());
 		checkExisitingProduct.setDiscount(product.getDiscount());
 		BigDecimal specialPrice = product.getPrice().subtract(
-			product.getDiscount().multiply(BigDecimal.valueOf(EcomConstants.PERCENTAGE_CAL_BY_100)).multiply(product.getPrice()));
+			product.getDiscount().multiply(BigDecimal.valueOf(EcomConstants.PERCENTAGE_CAL_BY_100))
+				.multiply(product.getPrice()));
 
 		if (!Objects.equals(checkExisitingProduct.getSpecialPrice(), specialPrice)) {
 			updateProductPricingInCart(checkExisitingProduct, specialPrice);
