@@ -63,7 +63,7 @@ public class WebSecurityConfig {
 			.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 			.authorizeHttpRequests(
 				requests -> requests.requestMatchers("/h2-console/**").permitAll().requestMatchers("/api/auth/**")
-					            .permitAll().requestMatchers("/swagger-ui/**").permitAll()
+					            .permitAll()
 //					            .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
 //					            .requestMatchers("/api/public/**").hasAnyAuthority("ROLE_USER", "ROLE_SELLER")
 					            .anyRequest().authenticated());
@@ -80,7 +80,7 @@ public class WebSecurityConfig {
 	 */
 	@Bean
 	public WebSecurityCustomizer webSecurityCustomizer () {
-		return (web -> web.ignoring().requestMatchers("/configuration/ui/**", "/swagger-ui.html"));
+		return (web -> web.ignoring().requestMatchers( "/swagger-ui/**", "/v3/api-docs/**","/swagger-ui.html"));
 	}
 
 }
