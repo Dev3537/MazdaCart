@@ -72,10 +72,9 @@ public class ProductController {
 	}
 
 	@PreAuthorize("hasAnyRole('ROLE_SELLER','ROLE_ADMIN')")
-	@PutMapping("/admin/products/{productName}")
-	public ResponseEntity<ProductDTO> updateProduct (@Valid @RequestBody ProductDTO productDTO,
-	                                                 @PathVariable String productName) {
-		ProductDTO responseDTO = productService.updateProduct(productDTO, productName);
+	@PutMapping("/admin/products")
+	public ResponseEntity<ProductDTO> updateProduct (@Valid @RequestBody ProductDTO productDTO) {
+		ProductDTO responseDTO = productService.updateProduct(productDTO);
 		return new ResponseEntity<>(responseDTO, HttpStatus.OK);
 	}
 

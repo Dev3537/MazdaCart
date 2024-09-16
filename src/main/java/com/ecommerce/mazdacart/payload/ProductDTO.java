@@ -27,6 +27,8 @@ public class ProductDTO {
 
 	private String image;
 
+	private String categoryName;
+
 	@NotNull
 	private Integer quantity;
 
