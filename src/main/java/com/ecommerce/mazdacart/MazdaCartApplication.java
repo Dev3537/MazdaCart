@@ -21,9 +21,4 @@ import org.springframework.web.client.RestClient;
 		return new ModelMapper();
 	}
 
-	@Bean
-	public RestClient restClient () {
-		return RestClient.builder().build();
-	}
-
 }

@@ -7,6 +7,8 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestClientResponseException;
 
 import static com.ecommerce.mazdacart.util.EcomConstants.HANDLED_BY_GENERIC_EXCEPTION_HANDLER;
 
@@ -62,6 +64,22 @@ public class MyGlobalExceptionHandler {
 		response.setMessage(e.getMessage());
 		return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
 
+	}
+
+	@ExceptionHandler(RestClientException.class)
+	public ResponseEntity<ExceptionResponse> myRestClientException (RestClientException e) {
+		ExceptionResponse response = new ExceptionResponse();
+		response.setTitle("External rest client down");
+		response.setMessage(e.getMessage());
+		return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+
+	@ExceptionHandler(RestClientResponseException.class)
+	public ResponseEntity<ExceptionResponse> myRestClientResponseException (RestClientResponseException e) {
+		ExceptionResponse response = new ExceptionResponse();
+		response.setTitle("External rest client exception");
+		response.setMessage(e.getMessage());
+		return new ResponseEntity<>(response, e.getStatusCode());
 	}
 
 }
