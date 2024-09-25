@@ -3,14 +3,20 @@ package com.ecommerce.mazdacart.service;
 import com.ecommerce.mazdacart.exceptions.APIException;
 import com.ecommerce.mazdacart.exceptions.ResourceNotFoundException;
 import com.ecommerce.mazdacart.model.*;
-import com.ecommerce.mazdacart.payload.*;
+import com.ecommerce.mazdacart.payload.OrderItemDTO;
+import com.ecommerce.mazdacart.payload.OrderRequestDTO;
+import com.ecommerce.mazdacart.payload.OrdersDTO;
+import com.ecommerce.mazdacart.payload.PaymentDTO;
 import com.ecommerce.mazdacart.repository.*;
 import com.ecommerce.mazdacart.util.AuthUtilHelperClass;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -47,14 +53,31 @@ public class OrderServiceImpl implements OrderService {
 	@Autowired
 	private RestClient restClient;
 
+	@Autowired
+	private final MeterRegistry meterRegistry;
+
+	private final Counter restClientExceptionsCounter;
+
+	public OrderServiceImpl (MeterRegistry meterRegistry) {
+		this.meterRegistry = meterRegistry;
+		this.restClientExceptionsCounter =
+			Counter.builder("rest.external.client.exceptions").tag("exception", "Rest Client Exceptions")
+				.description("Number of Rest Client Exceptions").register(meterRegistry);
+	}
 
 	@Transactional
 	@Override
 	public OrdersDTO placeOrder (String paymentMethod, Long addressId) {
 
 		String url = String.format("http://localhost:8081/api/payment/gateway-proceed/%s", paymentMethod);
+		OrderRequestDTO orderRequestDTO;
+		try {
+			orderRequestDTO = restClient.get().uri(url).retrieve().body(OrderRequestDTO.class);
 
-		OrderRequestDTO orderRequestDTO = restClient.get().uri(url).retrieve().body(OrderRequestDTO.class);
+		} catch (RestClientException e) {
+			restClientExceptionsCounter.increment();
+			throw e;
+		}
 
 		if (orderRequestDTO == null) {
 			throw new APIException("Payment Gateway failed");
