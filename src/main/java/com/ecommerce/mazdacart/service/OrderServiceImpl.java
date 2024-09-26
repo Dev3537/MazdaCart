@@ -13,6 +13,7 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
@@ -56,6 +57,9 @@ public class OrderServiceImpl implements OrderService {
 	@Autowired
 	private final MeterRegistry meterRegistry;
 
+	@Value("${payment.provider.uri}")
+	private String paymentProviderUri;
+
 	private final Counter restClientExceptionsCounter;
 
 	public OrderServiceImpl (MeterRegistry meterRegistry) {
@@ -69,7 +73,7 @@ public class OrderServiceImpl implements OrderService {
 	@Override
 	public OrdersDTO placeOrder (String paymentMethod, Long addressId) {
 
-		String url = String.format("http://localhost:8081/api/payment/gateway-proceed/%s", paymentMethod);
+		String url = String.format(paymentProviderUri, paymentMethod);
 		OrderRequestDTO orderRequestDTO;
 		try {
 			orderRequestDTO = restClient.get().uri(url).retrieve().body(OrderRequestDTO.class);
